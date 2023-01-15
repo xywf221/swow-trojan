@@ -1,0 +1,14 @@
+run_type: server
+local_addr: 0.0.0.0
+local_port: 4433
+remote_addr: 192.168.7.240
+remote_port: 80
+password:
+  - 123456
+  - 789456
+tcp:
+  no_delay: false
+  keep_alive: true
+ssl:
+  cert: './testdata/fullchain.cer'
+  key: './testdata/mirrors.proce.top.key'

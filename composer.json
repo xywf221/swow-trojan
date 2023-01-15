@@ -1,0 +1,28 @@
+{
+  "name": "xywf221/trojan",
+  "description": "Coroutine-based concurrency library for PHP",
+  "require": {
+    "swow/swow": "dev-develop",
+    "symfony/console": "^6.2",
+    "symfony/config": "^6.2",
+    "symfony/yaml": "^6.2",
+    "psr/log": "^3.0"
+  },
+  "scripts": {
+    "dev": [
+      "Composer\\Config::disableProcessTimeout",
+      "@php -d extension=swow bin/trojan config/config.yaml -vvv"
+    ]
+  },
+  "autoload": {
+    "psr-4": {
+      "xywf221\\Trojan\\": "src"
+    },
+    "files": [
+      "functions.php"
+    ]
+  },
+  "require-dev": {
+    "symfony/var-dumper": "^6.2"
+  }
+}
