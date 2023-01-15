@@ -32,15 +32,13 @@ class TrojanRequest
             throw new ParseRequestException("find password failed : not find CRLF");
         }
         $offset = $pos + 2;
-
         // 密码后面需要包含包体
         if ($buffer->getLength() <= $offset) {
             throw new ParseRequestException("payload need more data");
         }
-        $commandU8 = $buffer->readUInt8($offset);
-        $command = TrojanCommand::tryFrom($commandU8);
+        $command = TrojanCommand::tryFrom($buffer->readUInt8($offset));
         if ($command == null) {
-            throw new ParseRequestException("unknown trojan command: $commandU8");
+            throw new ParseRequestException("unknown trojan command");
         }
         // parser address
         $address = Socks5Address::Parse($buffer, $offset + 1);

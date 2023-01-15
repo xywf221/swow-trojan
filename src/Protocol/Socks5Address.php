@@ -24,7 +24,6 @@ class Socks5Address
         // add addr type
         $offset += 1;
 
-
         return match ($addrType) {
             Socks5AddressType::IPv4 => self::parseIpv4Addr($buffer, $offset),
             Socks5AddressType::FQDN => self::parseFQDNAddr($buffer, $offset),
@@ -76,7 +75,7 @@ class Socks5Address
     private static function parseIpv6Addr(Buffer $buffer, $offset): Socks5Address
     {
         if ($buffer->getLength() < $offset + 16 + 2) {
-            throw new ParseAddressException('read Ipv6 address failed : need more data');
+            throw new ParseAddressException('parse Ipv6 address failed : need more data');
         }
 
         $data = unpack("C16", $buffer->read($offset, 16));
@@ -90,7 +89,10 @@ class Socks5Address
     {
         $domainLen = $buffer->readUInt8($offset);
         if ($domainLen == 0) {
-            throw new ParseAddressException('read FQDN address failed : domain length is empty');
+            throw new ParseAddressException('parse FQDN address failed : domain length is empty');
+        }
+        if ($buffer->getLength() < $offset + 1 + $domainLen + 2) {
+            throw new ParseAddressException('parse FQDN address failed : need more data');
         }
         $domain = $buffer->read($offset + 1, $domainLen);
         $port = self::readPort($buffer, $offset + 1 + $domainLen);
