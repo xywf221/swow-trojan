@@ -1,6 +1,7 @@
 {
-  "name": "xywf221/trojan",
-  "description": "Coroutine-based concurrency library for PHP",
+  "name": "xywf221/swow-trojan",
+  "description": "trojan protocol for php",
+  "type": "project",
   "require": {
     "swow/swow": "dev-develop",
     "symfony/console": "^6.2",

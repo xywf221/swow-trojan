@@ -2,7 +2,10 @@
 
 目前 Server 模块可以正常使用 
 
-`composer run dev` 具体端口跟证书配置可以看 `config/config.yaml`
+### 如何运行
+`composer run dev` or `php -d extension=swow bin/trojan`
+
+具体端口跟证书配置可以看 `config/config.yaml`
 
 ### 待实现模块
 
