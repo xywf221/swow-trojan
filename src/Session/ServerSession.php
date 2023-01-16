@@ -71,11 +71,10 @@ class ServerSession implements SessionInterface
         $queryAddr = $valid ? $request->addr->address : $this->config['remote_addr'];
         $queryPort = $valid ? $request->addr->port : $this->config['remote_port'];
 
+        $bufferOffset = 0;
         if ($valid) {
             $this->logger->info("requested connection to {$request->addr->address}:{$request->addr->port}");
-            //把 header 数据包部分给移除
-            //感觉可以再send的时候指定start
-            $buffer->truncateFrom($request->length);
+            $bufferOffset = $request->length;
         } else {
             $this->logger->info("not trojan request, connecting to $queryAddr:$queryPort");
         }
@@ -90,24 +89,22 @@ class ServerSession implements SessionInterface
             }
             $outSocket->connect($queryAddr, $queryPort);
             // intSocket <[ == ]> outSocket
-            $outSocket->send($buffer);
-            $recvTraffic += $buffer->getLength();
+            $outSocket->send($buffer, $bufferOffset);
+            $recvTraffic += $buffer->getLength() - $bufferOffset;
             $buffer->clear();
 
             $wr = new WaitReference();
             // 这里是从 客户端读 然后写到 远程端
-            Coroutine::run(function () use ($inSocket, $outSocket, $wr, &$recvTraffic): void {
-                $recvTraffic += swow_socket_copy($inSocket, $outSocket);
-                $this->logger->debug('recv done');
-                $outSocket->close();
-            });
+            Coroutine::run(static function (Socket $src, Socket $dst) use ($wr, &$recvTraffic): void {
+                $recvTraffic += swow_socket_copy($src, $dst);
+                $dst->close();
+            }, $inSocket, $outSocket);
 
             // 这里是从 远程端读 然后写到 客户端
-            Coroutine::run(function (Socket $dst) use ($outSocket, $wr, &$sentTraffic) {
-                $sentTraffic = swow_socket_copy($outSocket, $dst);
-                $this->logger->debug('sent done');
+            Coroutine::run(static function (Socket $src, Socket $dst) use ($wr, &$sentTraffic): void {
+                $sentTraffic = swow_socket_copy($src, $dst);
                 $dst->close();
-            }, $valid && $request->command == TrojanCommand::UDP_ASSOCIATE ? new UdpWrapSocket($inSocket, $queryAddr, $queryPort) : $inSocket);
+            }, $outSocket, $valid && $request->command == TrojanCommand::UDP_ASSOCIATE ? new UdpWrapSocket($inSocket, $queryAddr, $queryPort) : $inSocket);
             WaitReference::wait($wr);
             $this->logger->info("forward traffic usage addr:[$queryAddr:$queryPort],recv:$recvTraffic,sent:$sentTraffic");
         } catch (\Exception $exception) {

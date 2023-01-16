@@ -18,12 +18,6 @@ class Service
     public function __construct(private readonly array $config, private readonly LoggerInterface $logger)
     {
         $this->acceptor = new Socket(Socket::TYPE_TCP);
-        if ($this->config['tcp']['no_delay']) {
-            $this->acceptor->setTcpNodelay(true);
-        }
-        if ($this->config['tcp']['keep_alive']) {
-            $this->acceptor->setTcpKeepAlive(true, $this->config['tcp']['keep_alive_delay']);
-        }
         if ($this->config['tcp']['accept_balance']) {
             $this->acceptor->setTcpAcceptBalance(true);
         }
@@ -41,8 +35,8 @@ class Service
         while (!$this->stopped) {
             $socket = $this->acceptor->accept();
             $this->logger->info("incoming connection from {$socket->getPeerAddress()}:{$socket->getPeerPort()}");
-            //todo 设置超时时间
             Coroutine::run(function () use ($socket) {
+                $this->configSocket($socket);
                 $session = new $this->session($this->config, $this->logger);
                 $session->start($socket);
             });
@@ -54,5 +48,16 @@ class Service
         $this->logger->critical("service shutdown");
         $this->stopped = true;
         $this->acceptor->close();
+    }
+
+    private function configSocket(Socket $socket): void
+    {
+        if ($this->config['tcp']['no_delay']) {
+            $socket->setTcpNodelay(true);
+        }
+        if ($this->config['tcp']['keep_alive']) {
+            $socket->setTcpKeepAlive(true, $this->config['tcp']['keep_alive_delay']);
+        }
+        //todo 设置超时时间
     }
 }

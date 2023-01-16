@@ -11,15 +11,15 @@ class UdpWrapSocket extends Socket
     {
     }
 
-    public function recvData(Buffer $buffer, int $offset = 0, int $size = -1, ?int $timeout = null): int
-    {
-        return $this->wrap->recvData($buffer, $offset, $size, $timeout);
-    }
-
     public function send(\Stringable|string $data, int $start = 0, int $length = -1, ?int $timeout = null): static
     {
         $this->wrap->send(UdpPacket::Generate($this->addr, $this->port, $data), $start, $length, $timeout);
         return $this;
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        call_user_func_array($this->wrap->$name, $arguments);
     }
 
 

@@ -37,6 +37,7 @@ class ServiceCommand extends Command
         );
         for ($i = 0; $i < count($serviceConfiguration['password']); $i++) {
             $serviceConfiguration['password'][$i] = hash('sha224', $serviceConfiguration['password'][$i]);
+            $logger->debug("sha224 hash password " . substr($serviceConfiguration['password'][$i], 0, 7));
         }
         $service = new Service($serviceConfiguration, $logger);
         Coroutine::run(static function () use ($service) {
