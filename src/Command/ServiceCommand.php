@@ -3,6 +3,7 @@
 namespace xywf221\Trojan\Command;
 
 use Psr\Log\LogLevel;
+use Swow\Channel;
 use Swow\Coroutine;
 use Swow\Signal;
 use Symfony\Component\Config\Definition\Processor;
@@ -43,7 +44,19 @@ class ServiceCommand extends Command
         Coroutine::run(static function () use ($service) {
             $service->run();
         });
-        Signal::wait(Signal::INT);
+        $stopChannel = new Channel();
+        $signals = [
+            Signal::INT,
+            Signal::TERM,
+            Signal::SEGV
+        ];
+        foreach ($signals as $signal) {
+            Coroutine::run(static function () use ($signal, $stopChannel) {
+                Signal::wait($signal);
+                $stopChannel->push($signal);
+            });
+        }
+        $stopChannel->pop();
         $service->stop();
         return Command::SUCCESS;
     }

@@ -15,19 +15,20 @@ class Service
 
     private bool $stopped = false;
 
+    private array $sessionDict = [
+        'server' => ServerSession::class
+    ];
+
     public function __construct(private readonly array $config, private readonly LoggerInterface $logger)
     {
         $this->acceptor = new Socket(Socket::TYPE_TCP);
         if ($this->config['tcp']['accept_balance']) {
             $this->acceptor->setTcpAcceptBalance(true);
         }
-        $dict = [
-            'server' => ServerSession::class
-        ];
-        $this->session = $dict[$this->config['run_type']] ?: 'client';
+        $this->session = $this->sessionDict[$this->config['run_type']] ?: 'server';
 
-        $this->acceptor->bind($this->config['local_addr'], $this->config['local_port'], Socket::BIND_FLAG_REUSEADDR)->listen();
-        $this->logger->critical("listen {$this->config['local_addr']}:{$this->config['local_port']}");
+        $this->acceptor->bind($this->config['local_addr'], $this->config['local_port'])->listen();
+        $this->logger->notice("listen {$this->config['local_addr']}:{$this->config['local_port']}");
     }
 
     public function run(): void

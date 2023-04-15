@@ -4,20 +4,18 @@ namespace xywf221\Trojan\Session;
 
 use Psr\Log\LoggerInterface;
 use Swow\Coroutine;
-use Swow\Selector;
 use Swow\Socket;
 use Swow\SocketException;
 use Swow\Sync\WaitReference;
 use xywf221\Trojan\Common\Buffer;
 use xywf221\Trojan\Core\Constant;
-use xywf221\Trojan\Core\UdpSocket;
 use xywf221\Trojan\Exception\ParseRequestException;
 use xywf221\Trojan\Exception\ParseUdpPacketException;
 use xywf221\Trojan\Protocol\TrojanCommand;
 use xywf221\Trojan\Protocol\TrojanRequest;
 use xywf221\Trojan\Protocol\UdpPacket;
 use xywf221\Trojan\Protocol\UdpWrapSocket;
-use function Swow\Utils\defer;
+use function Swow\defer;
 
 class ServerSession implements SessionInterface
 {
@@ -27,7 +25,7 @@ class ServerSession implements SessionInterface
 
     public function start(Socket $inSocket)
     {
-        defer($defer, static function () use ($inSocket): void {
+        defer(static function () use ($inSocket): void {
             $inSocket->close();
         });
 

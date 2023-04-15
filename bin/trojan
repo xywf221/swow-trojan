@@ -21,14 +21,14 @@ if (!file_exists(BASE_PATH . '/vendor/autoload.php')) {
     exit(1);
 }
 
-if (!extension_loaded('swow')) {
+if (!extension_loaded('swow') and !@dl('swow')) {
     echo "ERROR: Please install the swow extension first" . PHP_EOL;
     exit(1);
 }
 
 require BASE_PATH . '/vendor/autoload.php';
 
-(function () {
+(static function () {
     $application = new Application();
     $application->setName("trojan protocol for php");
     $application->add(new ServiceCommand());
